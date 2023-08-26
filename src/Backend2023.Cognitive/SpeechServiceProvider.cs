@@ -51,7 +51,6 @@ public class SpeechServiceProvider
     private SpeechConfig CreateSpeechConfig(SpeechRequest speechRequest)
     {
         SpeechConfig speechConfig = SpeechConfig.FromSubscription(_options.Value.AzureAIServicesKey, "westeurope");
-        speechConfig.SetProxy("localhost", 3128);
         speechConfig.SpeechSynthesisLanguage = speechRequest.Language;
         speechConfig.SpeechRecognitionLanguage = speechRequest.Language;
         speechConfig.SpeechSynthesisVoiceName = speechRequest.Voice;
