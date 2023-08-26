@@ -10,7 +10,7 @@ public class ChatBot : IChatBot
 {
     private static readonly string[] _systemPrompts =
     {
-        "Du bist ein erfahrener psychologe, dir werden persönliche fragen gestellt die du mit einer kurzen einfühlsamen antwort beantworten sollst."
+        "Du bist ein erfahrener psychologe, dir werden persönliche fragen gestellt die du kurz, prägnant und einfühlsam beantworten sollst."
     };
 
     private readonly IOptions<ApplicationConfiguration> _options;
@@ -38,7 +38,7 @@ public class ChatBot : IChatBot
         {
             Model = Model.ChatGPTTurbo,
             Messages = messages,
-            Temperature = 0,
+            Temperature = 0.4,
             MaxTokens = 200
         };
     }

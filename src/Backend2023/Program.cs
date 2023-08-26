@@ -30,7 +30,8 @@ app.UseSwaggerUI();
 
 app.UseCors(x =>
     x.AllowAnyMethod()
-        .WithOrigins("http://localhost:5173", "https://lively-island-07bd13b03.3.azurestaticapps.net/")
+        .WithOrigins("http://localhost:5173",
+            "https://lively-island-07bd13b03.3.azurestaticapps.net")
         .AllowAnyHeader()
         .WithExposedHeaders("Authorization")
         .AllowCredentials());
