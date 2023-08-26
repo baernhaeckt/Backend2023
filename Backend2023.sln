@@ -5,11 +5,13 @@ VisualStudioVersion = 17.7.34018.315
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Backend2023", "src\Backend2023\Backend2023.csproj", "{668AA7FE-483A-4F6C-9688-DC87CDC9162E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Backend2023.Cognitive", "src\Backend2023.Cognitive\Backend2023.Cognitive.csproj", "{B7C8A821-7D5E-4AC1-A882-81AA6DC119DA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Backend2023.Cognitive", "src\Backend2023.Cognitive\Backend2023.Cognitive.csproj", "{B7C8A821-7D5E-4AC1-A882-81AA6DC119DA}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{ACFF960F-A8F9-447E-8AB9-5477D6819795}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Backend2023.Cognitive.Tests", "tests\Backend2023.Cognitive.Tests\Backend2023.Cognitive.Tests.csproj", "{5D56ED88-9E95-47AF-9ED8-2E01A988D01D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Backend2023.Cognitive.Tests", "tests\Backend2023.Cognitive.Tests\Backend2023.Cognitive.Tests.csproj", "{5D56ED88-9E95-47AF-9ED8-2E01A988D01D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Backend2023.Tests", "Backend2023.Tests\Backend2023.Tests.csproj", "{802B5D75-D119-4CDB-86CF-C8F2C87B7EC7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -29,12 +31,17 @@ Global
 		{5D56ED88-9E95-47AF-9ED8-2E01A988D01D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5D56ED88-9E95-47AF-9ED8-2E01A988D01D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5D56ED88-9E95-47AF-9ED8-2E01A988D01D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{802B5D75-D119-4CDB-86CF-C8F2C87B7EC7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{802B5D75-D119-4CDB-86CF-C8F2C87B7EC7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{802B5D75-D119-4CDB-86CF-C8F2C87B7EC7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{802B5D75-D119-4CDB-86CF-C8F2C87B7EC7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{5D56ED88-9E95-47AF-9ED8-2E01A988D01D} = {ACFF960F-A8F9-447E-8AB9-5477D6819795}
+		{802B5D75-D119-4CDB-86CF-C8F2C87B7EC7} = {ACFF960F-A8F9-447E-8AB9-5477D6819795}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {BD6F36C8-DEB2-494D-A29E-F7D0866F76AF}

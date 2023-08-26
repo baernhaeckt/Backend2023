@@ -1,15 +1,12 @@
-using Microsoft.AspNetCore.Mvc;
-using OpenAI.API.Completions;
 using OpenAI.API;
+using OpenAI.API.Completions;
 
-namespace Backend2023.Controllers;
+namespace Backend2023.Tests;
 
-[ApiController]
-[Route("[controller]")]
-public class WeatherForecastController : ControllerBase
+public class OpenAIFixture
 {
-    [HttpGet(Name = "GetWeatherForecast")]
-    public async Task<IEnumerable<WeatherForecast>> GetAsync()
+    [Fact]
+    public async Task OpenAI_ShouldPerformOperations()
     {
         string query = "Schreibe ein Haiku";
         string outputResult = "";
@@ -29,12 +26,6 @@ public class WeatherForecastController : ControllerBase
             outputResult += completion.Text;
         }
 
-        return Enumerable.Range(1, 5).Select(index => new WeatherForecast
-        {
-            Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            TemperatureC = Random.Shared.Next(-20, 55),
-            Summary = outputResult
-        })
-        .ToArray();
+        Assert.Fail(outputResult);
     }
 }
