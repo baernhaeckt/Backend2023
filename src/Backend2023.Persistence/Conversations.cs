@@ -49,10 +49,11 @@ public class Conversations : IDisposable, IConversations
         // TODO: Append to the user message sub document
     }
 
-    public async Task<Client> GetConversation(string clientId)
+    public async Task<IEnumerable<string>> GetConversation(string clientId)
     {
         Container container = await Container();
-        return await container.ReadItemAsync<Client>(clientId, new PartitionKey(clientId));
+        Client client = await container.ReadItemAsync<Client>(clientId, new PartitionKey(clientId));
+        return client.Messages; 
     }
 
     private async Task<Container> Container()

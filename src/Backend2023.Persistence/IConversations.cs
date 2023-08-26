@@ -3,6 +3,8 @@
 public interface IConversations
 {
     Task AddResponseMessage(string clientId, string userMessage);
+
     Task AddUserMessage(string clientId, string userMessage);
-    Task<Client> GetConversation(string clientId);
+
+    Task<IEnumerable<string>> GetConversation(string clientId);
 }
