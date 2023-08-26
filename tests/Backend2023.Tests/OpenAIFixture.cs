@@ -1,30 +1,36 @@
-using OpenAI.API;
-using OpenAI.API.Completions;
+
+using OpenAI_API.Chat;
+using OpenAI_API.Models;
 
 namespace Backend2023.Tests;
-
+/// <summary>
+/// 
+/// </summary>
+/// <see href="https://platform.openai.com/docs/models/model-endpoint-compatibility">
 public class OpenAIFixture
 {
     [Fact]
     public async Task OpenAI_ShouldPerformOperations()
     {
-        string query = "Schreibe ein Haiku";
-        string outputResult = "";
+        string userInput = "Mein Tag heute war sehr anstrengend, mein Kollege hat mir gesagt ich stinke. Das hat mich wütend gemacht.";
+        string? outputResult = "";
 
-        var openai = new OpenAIAPI("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");
-        CompletionRequest completionRequest = new()
+        var api = new OpenAI_API.OpenAIAPI("--secret--");
+        ChatRequest chatRequest = new()
         {
-            Prompt = query,
-            Model = "gpt-3.5-turbo",
-            MaxTokens = 10
+            Model = Model.ChatGPTTurbo,
+            Messages = new List<ChatMessage>
+            {
+                new(ChatMessageRole.System, "Du bist ein erfahrener psychologe, dir werden persönliche fragen gestellt die du mit einer kurzen einfühlsamen antwort beantworten sollst."),
+                new(ChatMessageRole.User, userInput)
+            },
+            Temperature = 0.9,
+            MaxTokens = 200
         };
 
-        var completions = await openai.Completions.CreateCompletionAsync(completionRequest);
+        ChatResult result = await api.Chat.CreateChatCompletionAsync(chatRequest);
 
-        foreach (var completion in completions.Completions)
-        {
-            outputResult += completion.Text;
-        }
+        outputResult = result.Choices.FirstOrDefault()?.Message.Content;
 
         Assert.Fail(outputResult);
     }

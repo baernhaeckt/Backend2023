@@ -1,7 +1,7 @@
 ﻿using Backend2023.Common;
 using Microsoft.Extensions.Options;
-using OpenAI.API.Completions;
-using OpenAI.API;
+using OpenAI_API;
+using OpenAI_API.Completions;
 
 namespace Backend2023.OpenAI;
 
@@ -22,7 +22,7 @@ public class ConversationSummarizer : IConversationSummarizer
         CompletionRequest completionRequest = new()
         {
             Prompt = query,
-            Model = "gpt-3.5-turbo",
+            Model = "text-davinci-003",
             MaxTokens = 10
         };
 
