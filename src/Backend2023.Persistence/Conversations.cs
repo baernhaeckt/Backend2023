@@ -1,13 +1,28 @@
-﻿using Microsoft.Azure.Cosmos;
+﻿using Backend2023.Common;
+using Microsoft.Azure.Cosmos;
+using Microsoft.Extensions.Options;
 
 namespace Backend2023.Persistence;
 
-public class Conversations
+public class Conversations : IDisposable, IConversations
 {
-    public async Task testAsync()
+    private const string DatabaseName = "helpinghands";
+
+    private const string ContainerName = "clients";
+
+    private const string PartitionKeyPath = "/id";
+
+    private readonly IOptions<ApplicationConfiguration> _options;
+
+    private readonly CosmosClient _client;
+
+    public Conversations(IOptions<ApplicationConfiguration> options)
     {
-        CosmosClientOptions options = new()
+        _options = options;
+
+        CosmosClientOptions cosmosClientOptions = new()
         {
+            // This is only necessary for localhost (Azure CosmosDB Emulator).
             HttpClientFactory = () =>
             {
                 HttpMessageHandler httpMessageHandler = new HttpClientHandler()
@@ -19,11 +34,36 @@ public class Conversations
             },
             ConnectionMode = ConnectionMode.Gateway
         };
-        CosmosClient client = new("AccountEndpoint=https://localhost:8081/;AccountKey=C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==", options);
-        Database database = await client.CreateDatabaseIfNotExistsAsync("helpinghands");
-        Container container = await database.CreateContainerIfNotExistsAsync(new ContainerProperties("clients", "/id"));
-        Client clientItem = new() { id = Guid.NewGuid().ToString() };
-        await container.CreateItemAsync(clientItem);
-        var clientFromContainer = await container.ReadItemAsync<Client>(clientItem.id, new PartitionKey(clientItem.id));
+        _client = new(_options.Value.CosmosDbConnectionString, cosmosClientOptions);
+    }
+
+    public async Task AddUserMessage(string clientId, string userMessage)
+    {
+        Container container = await Container();
+        // TODO: Append to the user message sub document
+    }
+
+    public async Task AddResponseMessage(string clientId, string userMessage)
+    {
+        Container container = await Container();
+        // TODO: Append to the user message sub document
+    }
+
+    public async Task<Client> GetConversation(string clientId)
+    {
+        Container container = await Container();
+        return await container.ReadItemAsync<Client>(clientId, new PartitionKey(clientId));
+    }
+
+    private async Task<Container> Container()
+    {
+        Database database = await _client.CreateDatabaseIfNotExistsAsync(DatabaseName);
+        Container container = await database.CreateContainerIfNotExistsAsync(new ContainerProperties(ContainerName, PartitionKeyPath));
+        return container;
+    }
+
+    public void Dispose()
+    {
+        _client?.Dispose();
     }
 }

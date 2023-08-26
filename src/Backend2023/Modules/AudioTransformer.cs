@@ -7,7 +7,7 @@ namespace Backend2023.Modules;
 /// </summary>
 public class AudioTransformer
 {
-    public static AudioTransformer CreateNew() 
+    public static AudioTransformer CreateNew()
         => new();
 
     public async Task TransformWebAudioStreamToWavFile(Stream webAudioStream, string fileName)

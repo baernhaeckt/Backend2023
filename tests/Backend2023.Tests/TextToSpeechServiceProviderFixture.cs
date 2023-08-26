@@ -1,5 +1,4 @@
 using Backend2023.Common;
-using FluentAssertions;
 using Microsoft.Extensions.Options;
 
 namespace Backend2023.Cognitive.Tests;

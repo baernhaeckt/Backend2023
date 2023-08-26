@@ -2,13 +2,17 @@ using Backend2023.Cognitive;
 using Backend2023.Common;
 using Backend2023.Hubs;
 using Backend2023.Modules;
+using Backend2023.OpenAI;
+using Backend2023.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services
     .Configure<ApplicationConfiguration>(builder.Configuration.GetRequiredSection(nameof(ApplicationConfiguration)))
     .AddScoped<SpeechServiceProvider>()
-    .AddScoped<ChatBot>();
+    .AddSingleton<IChatBot, ChatBot>()
+    .AddSingleton<IConversations, Conversations>()
+    .AddSingleton<IConversationSummarizer, ConversationSummarizer>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
