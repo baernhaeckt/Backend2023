@@ -61,7 +61,6 @@ public class AudioHub : Hub
         string messageId = Guid.NewGuid().ToString("N");
         string waveUserFile = $"query_{messageId}.wav";
         string waveResponseFile = $"response_{messageId}.wav";
-        string mp3ResponseFile = $"response_{messageId}.mp3";
         AudioTransformer audioTransformer = AudioTransformer.CreateNew();
 
         await audioTransformer.TransformWebAudioStreamToWavFile(AudioData[connectionId], waveUserFile);
@@ -70,16 +69,14 @@ public class AudioHub : Hub
         string textResponse = await _chatBot.GenerateResponse(userMessage);
         await _conversations.AddResponseMessage(connectionId, userMessage);
         await _speechServiceProvider.TextToWavFile(new TextToSpeedRequest(textResponse, waveResponseFile));
-        audioTransformer.WavToMP3File(waveResponseFile, mp3ResponseFile);
 
         await AudioData[connectionId].DisposeAsync();
         AudioData.Remove(connectionId);
 
-        var byteContent = await File.ReadAllBytesAsync(mp3ResponseFile);
+        var byteContent = await File.ReadAllBytesAsync(waveResponseFile);
 
         File.Delete(waveUserFile);
         File.Delete(waveResponseFile);
-        File.Delete(mp3ResponseFile);
 
         await Clients.Caller.SendAsync("audioResponse", new AudioResponse(
             userMessage,
