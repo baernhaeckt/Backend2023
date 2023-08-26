@@ -2,26 +2,33 @@
 using Backend2023.Modules;
 using Backend2023.Persistence;
 using Microsoft.AspNetCore.SignalR;
+using System;
 using System.Collections.Concurrent;
 
 namespace Backend2023.Hubs;
 
 public class AudioHub : Hub
 {
+    private readonly ILogger<AudioHub> _logger;
+
     private readonly SpeechServiceProvider _speechServiceProvider;
     
     private readonly IChatBot _chatBot;
 
     private readonly IConversations _conversations;
 
+    private readonly IEmotionDetectionClient _emotionDetectionClient;
+
     // Dictionary to hold audio data for each client
     private static readonly ConcurrentDictionary<string, MemoryStream> AudioData = new();
 
-    public AudioHub(SpeechServiceProvider speechServiceProvider, IChatBot chatBot, IConversations conversations)
+    public AudioHub(ILogger<AudioHub> logger, SpeechServiceProvider speechServiceProvider, IChatBot chatBot, IConversations conversations, IEmotionDetectionClient emotionDetectionClient)
     {
+        _logger = logger;
         _speechServiceProvider = speechServiceProvider;
         _chatBot = chatBot;
         _conversations = conversations;
+        _emotionDetectionClient = emotionDetectionClient;
     }
 
     public async Task Handshake(string text)
@@ -71,7 +78,6 @@ public class AudioHub : Hub
 
             await _conversations.AddResponseMessage(connectionId, textResponse);
             await _speechServiceProvider.TextToWavFile(new TextToSpeedRequest(textResponse, waveResponseFile));
-            audio?.DisposeAsync();
             var byteContent = await File.ReadAllBytesAsync(waveResponseFile);
 
             await Clients.Caller
@@ -79,6 +85,8 @@ public class AudioHub : Hub
         }
         finally
         {
+            audio?.Dispose();
+
             if (File.Exists(waveUserFile))
             {
                 File.Delete(waveUserFile);
@@ -89,5 +97,17 @@ public class AudioHub : Hub
                 File.Delete(waveResponseFile);
             }
         }
+    }
+
+    public override Task OnConnectedAsync()
+    {
+        _logger.LogInformation("Connceted clientId: {connectionId}", Context.ConnectionId);
+        return base.OnConnectedAsync();
+    }
+
+    public override Task OnDisconnectedAsync(Exception? exception)
+    {
+        _logger.LogError(exception, "Disconnected clientId: {connectionId}", Context.ConnectionId);
+        return base.OnDisconnectedAsync(exception);
     }
 }
