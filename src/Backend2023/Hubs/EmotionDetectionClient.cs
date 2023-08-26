@@ -1,4 +1,6 @@
-﻿namespace Backend2023.Hubs;
+﻿using System.Net.Http.Headers;
+
+namespace Backend2023.Hubs;
 
 public class EmotionDetectionClient : IEmotionDetectionClient
 {
@@ -14,7 +16,8 @@ public class EmotionDetectionClient : IEmotionDetectionClient
         var content = new MultipartFormDataContent();
         using FileStream fileStream = new(filepath, FileMode.Open);
         using StreamContent streamContent = new(fileStream);
-        content.Add(streamContent, Path.GetFileNameWithoutExtension(fileStream.Name), Path.GetFileName(fileStream.Name));
+        streamContent.Headers.ContentType = new MediaTypeHeaderValue("audio/wav");
+        content.Add(streamContent, "file", Path.GetFileName(fileStream.Name));
         HttpResponseMessage response = await _httpClient.PostAsync("/api/v1/emotion-detection/audio", content);
         response.EnsureSuccessStatusCode();
 

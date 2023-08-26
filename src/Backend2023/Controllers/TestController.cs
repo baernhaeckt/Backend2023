@@ -28,6 +28,7 @@ public class TestController : ControllerBase
         using(Stream stream = fileInfo.OpenWrite())
         {
             await formFile.CopyToAsync(stream);
+            await stream.FlushAsync();
         }
 
         await client.ExecuteEmotionDetection(fileInfo.FullName);
