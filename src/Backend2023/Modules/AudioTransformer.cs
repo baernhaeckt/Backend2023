@@ -22,10 +22,14 @@ public class AudioTransformer
     public async Task TransformWebAudioStreamToWavFileWithFfmpeg(Stream webAudioStream, string wavFileName)
     {
         string webAudioFileName = $"{Path.GetTempFileName()}";
+        webAudioStream.Seek(0, SeekOrigin.Begin);
         await using (var fileStream = new FileStream(webAudioFileName, FileMode.Create))
         {
             await webAudioStream.CopyToAsync(fileStream);
+            await webAudioStream.FlushAsync();
         }
+
+        _logger.LogInformation($"Created audioFile:{webAudioFileName}");
 
         ProcessStartInfo psi = new ProcessStartInfo
         {
