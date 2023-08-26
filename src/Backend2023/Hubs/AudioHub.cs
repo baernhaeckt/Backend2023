@@ -11,7 +11,9 @@ public class AudioHub : Hub
     private readonly ILogger<AudioHub> _logger;
 
     private readonly SpeechServiceProvider _speechServiceProvider;
-    
+
+    private readonly AudioTransformer _audioTransformer;
+
     private readonly IChatBot _chatBot;
 
     private readonly IConversations _conversations;
@@ -21,10 +23,16 @@ public class AudioHub : Hub
     // Dictionary to hold audio data for each client
     private static readonly ConcurrentDictionary<string, MemoryStream> AudioData = new();
 
-    public AudioHub(ILogger<AudioHub> logger, SpeechServiceProvider speechServiceProvider, IChatBot chatBot, IConversations conversations, IEmotionDetectionClient emotionDetectionClient)
+    public AudioHub(ILogger<AudioHub> logger, 
+        SpeechServiceProvider speechServiceProvider,
+        AudioTransformer audioTransformer,
+        IChatBot chatBot, 
+        IConversations conversations, 
+        IEmotionDetectionClient emotionDetectionClient)
     {
         _logger = logger;
         _speechServiceProvider = speechServiceProvider;
+        _audioTransformer = audioTransformer;
         _chatBot = chatBot;
         _conversations = conversations;
         _emotionDetectionClient = emotionDetectionClient;
@@ -71,8 +79,11 @@ public class AudioHub : Hub
         string waveResponseFile = $"response_{messageId}.wav";
         try
         {
-            AudioTransformer audioTransformer = AudioTransformer.CreateNew();
-            await audioTransformer.TransformWebAudioStreamToWavFile(audio, waveUserFile);
+            await using var fileStream = new FileStream($"{messageId}.webm", FileMode.Create);
+            audio.Seek(0, SeekOrigin.Begin);
+            await audio.CopyToAsync(fileStream);
+
+            await _audioTransformer.TransformWebAudioStreamToWavFileWithFfmpeg(audio, waveUserFile);
 
             // We run the emotion detection async and await it later because we don't depend on it here.
             Task<EmotionDetectionResponse> emotionDetectionTask = _emotionDetectionClient.ExecuteEmotionDetection(waveUserFile);
