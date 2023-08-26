@@ -20,8 +20,9 @@ public class AudioTransformer
         await waveWriter.FlushAsync();
     }
 
-    public Task<Stream> WavToWebm(Stream stream)
+    public void WavToMP3File(string fileName, string mp4FileNameOut)
     {
-        return Task.FromResult((Stream)null!);
+        using WaveFileReader reader = new WaveFileReader(fileName);
+        MediaFoundationEncoder.EncodeToMp3(reader, mp4FileNameOut);
     }
 }

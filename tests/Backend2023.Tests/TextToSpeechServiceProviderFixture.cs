@@ -24,25 +24,32 @@ public class TextToSpeechServiceProviderFixture
     public async Task Should_GenerateSpeech()
     {
         // Arrange
-        TextToSpeedRequest request = new("Ich bin die Leni, und ich mag es durch den Regen zu tanzen.");
+        TextToSpeedRequest request = new("Ich bin die Leni, und ich mag es durch den Regen zu tanzen.", "test.wav");
 
         // Act
-        byte[] result = await _speechServiceProvider.TextToAudioByteArrayAsync(request);
+        await _speechServiceProvider.TextToWavFile(request);
 
         // Assert
-        result.Should().NotBeNull();
     }
-
-
     [Fact]
-    public async Task Should_GenerateText()
+    public async Task Should_GenerateSpeech_WithSSML()
     {
         // Arrange
+        string ssmlText = @"<speak version=""1.0"" xmlns=""http://www.w3.org/2001/10/synthesis"" xml:lang=""en-GB"">
+  <voice name=""en-GB-HollieNeural"">
+    Hello, this is an example of using SSML.
+    <prosody rate=""slow"">This part is spoken slowly.</prosody>
+    <prosody pitch=""-10%"">This part is spoken with a lower pitch.</prosody>
+    <break time=""500ms""/> <!-- Pause for 500 milliseconds -->
+    Now I'm going to spell a word: <say-as interpret-as=""characters"">SSML</say-as>.
+    <emphasis level=""strong"">This part is emphasized strongly.</emphasis>
+  </voice>
+</speak>";
+        TextToSpeedRequest request = new TextToSpeedRequest(ssmlText, "test.wav", IsSpeechSynthesisMarkupLanguage: true);
 
         // Act
-        string result = await _speechServiceProvider.AudioToTextAsync(new SpeechToTextRequest(null!));
+        await _speechServiceProvider.TextToWavFile(request);
 
         // Assert
-        result.Should().NotBeNull();
     }
 }

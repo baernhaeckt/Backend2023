@@ -14,7 +14,7 @@ public class SpeechServiceProvider
         _options = options;
     }
 
-    public async Task<byte[]> TextToAudioByteArrayAsync(TextToSpeedRequest textToSpeedRequest)
+    public async Task TextToWavFile(TextToSpeedRequest textToSpeedRequest)
     {
         using var result = await Synthesize(textToSpeedRequest);
         if (result.Reason == ResultReason.Canceled)
@@ -22,15 +22,15 @@ public class SpeechServiceProvider
             var cancellation = SpeechSynthesisCancellationDetails.FromResult(result);
             throw new InvalidOperationException($"Cancelled(Error:{cancellation.ErrorCode},Details:{cancellation.ErrorDetails}");
         }
-
-        using AudioDataStream audioStream = AudioDataStream.FromResult(result);
-        return result.AudioData;
+        
+        using var audioStream = AudioDataStream.FromResult(result);
+        await audioStream.SaveToWaveFileAsync(textToSpeedRequest.OutFileName);
     }
 
     public async Task<string> AudioToTextAsync(SpeechToTextRequest request)
     {
-        var audioConfig = AudioConfig.FromWavFileInput(request.FileName);
-        SpeechRecognizer recognizer = CreateRecognizer(request, audioConfig);
+        using var audioConfig = AudioConfig.FromWavFileInput(request.FileName);
+        using SpeechRecognizer recognizer = CreateRecognizer(request, audioConfig);
         SpeechRecognitionResult? result = await recognizer.RecognizeOnceAsync();
 
         if (result.Reason == ResultReason.Canceled)

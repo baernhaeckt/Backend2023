@@ -57,18 +57,34 @@ public class AudioHub : Hub
             await Clients.Client(connectionId).SendAsync("CloseAudioStreamResponse", 0);
             return;
         }
-        
-        string waveFile = $"{Guid.NewGuid():N}.wav";
+
+        string messageId = Guid.NewGuid().ToString("N");
+        string waveUserFile = $"query_{messageId}.wav";
+        string waveResponseFile = $"response_{messageId}.wav";
+        string mp3ResponseFile = $"response_{messageId}.mp3";
         AudioTransformer audioTransformer = AudioTransformer.CreateNew();
 
-        await audioTransformer.TransformWebAudioStreamToWavFile(AudioData[connectionId], waveFile);
-        string userMessage = await _speechServiceProvider.AudioToTextAsync(new SpeechToTextRequest(waveFile));
+        await audioTransformer.TransformWebAudioStreamToWavFile(AudioData[connectionId], waveUserFile);
+        string userMessage = await _speechServiceProvider.AudioToTextAsync(new SpeechToTextRequest(waveUserFile));
         await _conversations.AddUserMessage(connectionId, userMessage);
         string textResponse = await _chatBot.GenerateResponse(userMessage);
         await _conversations.AddResponseMessage(connectionId, userMessage);
-        byte[] wavByteResult = await _speechServiceProvider.TextToAudioByteArrayAsync(new TextToSpeedRequest(textResponse));
+        await _speechServiceProvider.TextToWavFile(new TextToSpeedRequest(textResponse, waveResponseFile));
+        audioTransformer.WavToMP3File(waveResponseFile, mp3ResponseFile);
 
         await AudioData[connectionId].DisposeAsync();
         AudioData.Remove(connectionId);
+
+        var byteContent = await File.ReadAllBytesAsync(mp3ResponseFile);
+
+        File.Delete(waveUserFile);
+        File.Delete(waveResponseFile);
+        File.Delete(mp3ResponseFile);
+
+        await Clients.Caller.SendAsync("audioResponse", new AudioResponse(
+            userMessage,
+            textResponse,
+            Convert.ToBase64String(byteContent)));
+
     }
 }
