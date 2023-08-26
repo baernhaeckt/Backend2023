@@ -5,7 +5,11 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddSignalR();
+builder.Services.AddSignalR(opt =>
+{
+    opt.EnableDetailedErrors = true;
+    opt.MaximumReceiveMessageSize = 1024 * 1024 * 512; // 512kb
+});
 
 var app = builder.Build();
 
