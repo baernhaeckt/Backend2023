@@ -11,15 +11,17 @@ namespace Backend2023.Modules;
 public class AudioTransformer
 {
     private readonly HttpClient _httpClient;
+    private readonly ILogger<AudioTransformer> _logger;
 
-    public AudioTransformer(HttpClient httpClient)
+    public AudioTransformer(HttpClient httpClient, ILogger<AudioTransformer> logger)
     {
         _httpClient = httpClient;
+        _logger = logger;
     }
 
     public async Task TransformWebAudioStreamToWavFileWithFfmpeg(Stream webAudioStream, string wavFileName)
     {
-        string webAudioFileName = $"{Guid.NewGuid():N}";
+        string webAudioFileName = $"{Path.GetTempFileName()}";
         await using (var fileStream = new FileStream(webAudioFileName, FileMode.Create))
         {
             await webAudioStream.CopyToAsync(fileStream);
@@ -33,15 +35,23 @@ public class AudioTransformer
             RedirectStandardError = true,
             UseShellExecute = false,
             CreateNoWindow = true,
-            Arguments = $"-i ./{webAudioFileName} ./{wavFileName}" // Pass the command as an argument to the shell
+            Arguments = $"-i {webAudioFileName} {wavFileName}" // Pass the command as an argument to the shell
         };
 
         // Start the process
         using (Process process = new Process())
         {
             process.StartInfo = psi;
+            process.Start();                // Handle the output and error streams
+            process.OutputDataReceived += (sender, e) => _logger.LogInformation(e.Data);
+            process.ErrorDataReceived += (sender, e) => _logger.LogError(e.Data);
+
             process.Start();
-            process.WaitForExit();
+            process.BeginOutputReadLine();
+            process.BeginErrorReadLine();
+            await process.WaitForExitAsync();
+
+            _logger.LogInformation("Process exited with code: " + process.ExitCode);
         }
     }
 

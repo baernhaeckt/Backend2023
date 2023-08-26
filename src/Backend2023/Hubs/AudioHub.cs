@@ -75,7 +75,7 @@ public class AudioHub : Hub
         }
 
         string messageId = Guid.NewGuid().ToString("N");
-        string waveUserFile = $"query_{messageId}.wav";
+        string waveUserFile = Path.GetTempFileName();
         string waveResponseFile = $"response_{messageId}.wav";
         try
         {
