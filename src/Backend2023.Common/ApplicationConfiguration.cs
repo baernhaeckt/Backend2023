@@ -1,4 +1,4 @@
-﻿namespace Backend2023;
+﻿namespace Backend2023.Common;
 
 public class ApplicationConfiguration
 {

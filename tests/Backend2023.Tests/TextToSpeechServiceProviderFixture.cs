@@ -1,22 +1,26 @@
+using Backend2023.Common;
 using FluentAssertions;
+using Microsoft.Extensions.Options;
 
 namespace Backend2023.Cognitive.Tests;
 
 public class TextToSpeechServiceProviderFixture
 {
-    private readonly AzureConfiguration _azureConfiguration = new()
-    {
-        ServiceRegion = "westeurope",
-        SubscriptionKey = "098a9c0a3b1648ffb4ae57288c58d827"
-    };
-
     private readonly SpeechServiceProvider _speechServiceProvider;
 
     public TextToSpeechServiceProviderFixture()
     {
-        _speechServiceProvider = new SpeechServiceProvider(_azureConfiguration);
+        var applicationConfiguration = new ApplicationConfiguration()
+        {
+            AzureAIServicesKey = "098a9c0a3b1648ffb4ae57288c58d827",
+            CosmosDbConnectionString = "dummy",
+            OpenAIKey = "dummy"
+        };
+
+        IOptions<ApplicationConfiguration> applicationConfigurationOptions = Options.Create(applicationConfiguration);
+        _speechServiceProvider = new SpeechServiceProvider(applicationConfigurationOptions);
     }
-    
+
     [Fact]
     public async Task Should_GenerateSpeech()
     {

@@ -1,12 +1,10 @@
-using FluentAssertions;
-using Microsoft.Azure.Cosmos;
+﻿using Microsoft.Azure.Cosmos;
 
-namespace Backend2023.Tests;
+namespace Backend2023.Persistence;
 
-public class CosmosDbFixture
+public class Conversations
 {
-    [Fact]
-    public async Task CosmosDb_ShouldPerformOperations()
+    public async Task testAsync()
     {
         CosmosClientOptions options = new()
         {
@@ -27,11 +25,5 @@ public class CosmosDbFixture
         Client clientItem = new() { id = Guid.NewGuid().ToString() };
         await container.CreateItemAsync(clientItem);
         var clientFromContainer = await container.ReadItemAsync<Client>(clientItem.id, new PartitionKey(clientItem.id));
-        clientFromContainer.Resource.id.Should().Be(clientItem.id);
     }
-}
-
-class Client
-{
-    public string id { get; set; } = string.Empty;
 }

@@ -25,4 +25,12 @@
     </PackageReference>
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Backend2023.Cognitive\Backend2023.Cognitive.csproj" />
+    <ProjectReference Include="..\..\src\Backend2023.Common\Backend2023.Common.csproj" />
+    <ProjectReference Include="..\..\src\Backend2023.OpenAI\Backend2023.OpenAI.csproj" />
+    <ProjectReference Include="..\..\src\Backend2023.Persistence\Backend2023.Persistence.csproj" />
+    <ProjectReference Include="..\..\src\Backend2023\Backend2023.csproj" />
+  </ItemGroup>
+
 </Project>

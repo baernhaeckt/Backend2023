@@ -1,15 +1,17 @@
-﻿using Microsoft.CognitiveServices.Speech;
+﻿using Backend2023.Common;
+using Microsoft.CognitiveServices.Speech;
 using Microsoft.CognitiveServices.Speech.Audio;
+using Microsoft.Extensions.Options;
 
 namespace Backend2023.Cognitive;
 
 public class SpeechServiceProvider
 {
-    private readonly AzureConfiguration _azureConfiguration;
+    private readonly IOptions<ApplicationConfiguration> _options;
 
-    public SpeechServiceProvider(AzureConfiguration azureConfiguration)
+    public SpeechServiceProvider(IOptions<ApplicationConfiguration> options)
     {
-        _azureConfiguration = azureConfiguration;
+        _options = options;
     }
 
     public async Task<byte[]> TextToAudioByteArrayAsync(TextToSpeedRequest textToSpeedRequest)
@@ -48,7 +50,7 @@ public class SpeechServiceProvider
 
     private SpeechConfig CreateSpeechConfig(SpeechRequest speechRequest)
     {
-        SpeechConfig speechConfig = SpeechConfig.FromSubscription(_azureConfiguration.SubscriptionKey, _azureConfiguration.ServiceRegion);
+        SpeechConfig speechConfig = SpeechConfig.FromSubscription(_options.Value.AzureAIServicesKey, "westeurope");
         speechConfig.SetProxy("localhost", 3128);
         speechConfig.SpeechSynthesisLanguage = speechRequest.Language;
         speechConfig.SpeechRecognitionLanguage = speechRequest.Language;
