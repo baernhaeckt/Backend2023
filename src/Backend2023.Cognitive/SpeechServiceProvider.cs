@@ -12,7 +12,7 @@ public class SpeechServiceProvider
         _azureConfiguration = azureConfiguration;
     }
 
-    public async Task<byte[]> TextToAudioByteArray(TextToSpeedRequest textToSpeedRequest)
+    public async Task<byte[]> TextToAudioByteArrayAsync(TextToSpeedRequest textToSpeedRequest)
     {
         using var result = await Synthesize(textToSpeedRequest);
         if (result.Reason == ResultReason.Canceled)
@@ -25,12 +25,12 @@ public class SpeechServiceProvider
         return result.AudioData;
     }
 
-    public async Task<string> AudioToText(SpeechToTextRequest request)
+    public async Task<string> AudioToTextAsync(SpeechToTextRequest request)
     {
-        AudioConfig config = AudioConfig.FromWavFileInput("output.wav");
-        SpeechRecognizer recognizer = CreateRecognizer(request, config);
+        var audioConfig = AudioConfig.FromWavFileInput(request.FileName);
+        SpeechRecognizer recognizer = CreateRecognizer(request, audioConfig);
         SpeechRecognitionResult? result = await recognizer.RecognizeOnceAsync();
-        
+
         if (result.Reason == ResultReason.Canceled)
         {
             var cancellation = CancellationDetails.FromResult(result);

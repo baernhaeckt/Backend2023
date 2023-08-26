@@ -1,6 +1,14 @@
+using Backend2023.Cognitive;
 using Backend2023.Hubs;
+using Backend2023.Modules;
 
 var builder = WebApplication.CreateBuilder(args);
+
+AzureConfiguration? configuration = builder.Configuration.GetSection(AzureConfiguration.Path).Get<AzureConfiguration>();
+builder.Services
+    .AddSingleton(configuration!)
+    .AddScoped<SpeechServiceProvider>()
+    .AddScoped<ChatBot>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

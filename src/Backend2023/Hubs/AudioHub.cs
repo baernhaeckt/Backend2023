@@ -1,15 +1,22 @@
-﻿using System.IO;
-using System.Text;
+﻿using Backend2023.Cognitive;
+using Backend2023.Modules;
 using Microsoft.AspNetCore.SignalR;
 
 namespace Backend2023.Hubs;
 
 public class AudioHub : Hub
 {
-    private const int WAVHeaderSize = 44;
+    private readonly SpeechServiceProvider _speechServiceProvider;
+    private readonly ChatBot _chatBot;
 
     // Dictionary to hold audio data for each client
     private static readonly Dictionary<string, MemoryStream> AudioData = new();
+
+    public AudioHub(SpeechServiceProvider speechServiceProvider, ChatBot chatBot)
+    {
+        _speechServiceProvider = speechServiceProvider;
+        _chatBot = chatBot;
+    }
 
     public async Task Handshake(string text)
     {
@@ -45,17 +52,17 @@ public class AudioHub : Hub
             await Clients.Client(connectionId).SendAsync("CloseAudioStreamResponse", 0);
             return;
         }
+        
+        string waveFile = $"{Guid.NewGuid():N}.wav";
+        AudioTransformer audioTransformer = AudioTransformer.CreateNew();
 
-        string filePath = "audio.webm"; // Replace with your desired file path
-        await using (var fileStream = new FileStream(filePath, FileMode.Create))
-        {
-            // Copy the MemoryStream content to the FileStream
-            AudioData[connectionId].Seek(0, SeekOrigin.Begin);
-            await AudioData[connectionId].CopyToAsync(fileStream);
-        }
+        await audioTransformer.TransformWebAudioStreamToWavFile(AudioData[connectionId], waveFile);
+        string userMessage = await _speechServiceProvider.AudioToTextAsync(new SpeechToTextRequest(waveFile));
 
+        string textResponse = await _chatBot.GenerateResponse(connectionId, userMessage);
+        byte[] wavByteResult = await _speechServiceProvider.TextToAudioByteArrayAsync(new TextToSpeedRequest(textResponse));
+
+        await AudioData[connectionId].DisposeAsync();
         AudioData.Remove(connectionId);
-
-        // TODO: Generate Response 
     }
 }
