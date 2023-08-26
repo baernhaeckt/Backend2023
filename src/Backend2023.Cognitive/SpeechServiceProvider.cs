@@ -63,7 +63,7 @@ public class SpeechServiceProvider
     }
 
     private SpeechSynthesizer CreateSynthesizer(TextToSpeedRequest request) 
-        => new(CreateSpeechConfig(request));
+        => new(CreateSpeechConfig(request), AudioConfig.FromStreamOutput(new PullAudioOutputStream()));
 
     private SpeechRecognizer CreateRecognizer(SpeechToTextRequest request, AudioConfig audioConfig) 
         => new(CreateSpeechConfig(request), audioConfig);
