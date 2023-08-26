@@ -4,5 +4,5 @@ public class Client
 {
     public string id { get; set; } = string.Empty;
 
-    public IEnumerable<string> Messages { get; set; } = Enumerable.Empty<string>();
+    public IEnumerable<Message> Messages { get; set; } = Enumerable.Empty<Message>();
 }

@@ -39,25 +39,51 @@ public class Conversations : IDisposable, IConversations
 
     public async Task AddUserMessage(string clientId, string userMessage)
     {
-        Container container = await Container();
-        await container.UpsertItemAsync(new Client
-        {
-            id = clientId,
-            Messages = new[] { userMessage }
-        });
+        await AddMessage(clientId, userMessage, "user");
     }
 
     public async Task AddResponseMessage(string clientId, string userMessage)
     {
+        await AddMessage(clientId, userMessage, "bot");
+    }
+
+    private async Task AddMessage(string clientId, string userMessage, string kind)
+    {
         Container container = await Container();
-        // TODO: Append to the user message sub document
+
+        Message message = new()
+        {
+            Content = userMessage,
+            TimeStamp = DateTime.UtcNow,
+            Kind = kind
+        };
+
+        try
+        {
+            Client client = await container.ReadItemAsync<Client>(clientId, new PartitionKey(clientId));
+            PatchOperation patchOperation = PatchOperation.Add("/Messages/-", message);
+            await container.PatchItemAsync<Client>(clientId, new PartitionKey(clientId), new[] { patchOperation });
+        }
+        catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+        {
+            // We accept the race condition here.
+            // In theory we could lose messages but that would be a mistake anyway.
+            await container.UpsertItemAsync(new Client
+            {
+                id = clientId,
+                Messages = new[]
+                {
+                    message
+                }
+            });
+        }
     }
 
     public async Task<IEnumerable<string>> GetConversation(string clientId)
     {
         Container container = await Container();
         Client client = await container.ReadItemAsync<Client>(clientId, new PartitionKey(clientId));
-        return client.Messages; 
+        return client.Messages.Select(m => m.Content);
     }
 
     private async Task<Container> Container()
