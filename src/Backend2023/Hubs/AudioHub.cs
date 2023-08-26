@@ -2,7 +2,6 @@
 using Backend2023.Modules;
 using Backend2023.Persistence;
 using Microsoft.AspNetCore.SignalR;
-using System;
 using System.Collections.Concurrent;
 
 namespace Backend2023.Hubs;
@@ -33,6 +32,7 @@ public class AudioHub : Hub
 
     public async Task Handshake(string text)
     {
+        _logger.LogInformation("Handshake clientId: {connectionId}", Context.ConnectionId);
         await Clients.Caller.SendAsync("handshake", $"ack: {text}");
     }
 
