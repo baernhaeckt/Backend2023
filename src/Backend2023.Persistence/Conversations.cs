@@ -40,7 +40,11 @@ public class Conversations : IDisposable, IConversations
     public async Task AddUserMessage(string clientId, string userMessage)
     {
         Container container = await Container();
-        // TODO: Append to the user message sub document
+        await container.UpsertItemAsync(new Client
+        {
+            id = clientId,
+            Messages = new[] { userMessage }
+        });
     }
 
     public async Task AddResponseMessage(string clientId, string userMessage)
