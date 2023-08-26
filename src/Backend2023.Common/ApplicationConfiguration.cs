@@ -9,4 +9,8 @@ public class ApplicationConfiguration
     public required string AzureAIServicesKey { get; set; }
 
     public required string MlServiceUrl { get; set; }
+
+    public string? ProxyHost { get; set; }
+
+    public int? ProxyPort { get; set; }
 }

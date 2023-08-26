@@ -6,5 +6,7 @@ public interface IConversations
 
     Task AddUserMessage(string clientId, string userMessage);
 
+    Task CreateClientAsync(string clientId, Client client);
+
     Task<IEnumerable<string>> GetConversation(string clientId);
 }

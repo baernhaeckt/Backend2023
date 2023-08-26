@@ -9,11 +9,12 @@ public class TextToSpeechServiceProviderFixture
 
     public TextToSpeechServiceProviderFixture()
     {
-        var applicationConfiguration = new ApplicationConfiguration()
+        var applicationConfiguration = new ApplicationConfiguration
         {
             AzureAIServicesKey = "098a9c0a3b1648ffb4ae57288c58d827",
             CosmosDbConnectionString = "dummy",
-            OpenAIKey = "dummy"
+            OpenAIKey = "dummy",
+            MlServiceUrl = null!
         };
 
         IOptions<ApplicationConfiguration> applicationConfigurationOptions = Options.Create(applicationConfiguration);

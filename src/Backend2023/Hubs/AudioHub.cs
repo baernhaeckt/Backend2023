@@ -36,6 +36,11 @@ public class AudioHub : Hub
         await Clients.Caller.SendAsync("handshake", $"ack: {text}");
     }
 
+    public async Task SendNickname(string nickname)
+    {
+        await _conversations.CreateClientAsync(Context.ConnectionId, new Client {Nickname = nickname});
+    }
+
     /// <summary>
     ///     Stream uploaded audio chunks with a single WAV header to a memory stream.
     /// </summary>

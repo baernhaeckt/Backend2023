@@ -1,6 +1,7 @@
 ﻿using Backend2023.Common;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Options;
+using Container = Microsoft.Azure.Cosmos.Container;
 
 namespace Backend2023.Persistence;
 
@@ -40,6 +41,13 @@ public class Conversations : IDisposable, IConversations
     public async Task AddUserMessage(string clientId, string userMessage)
     {
         await AddMessage(clientId, userMessage, "user");
+    }
+
+    public async Task CreateClientAsync(string clientId, Client clientCrequestRequest)
+    {
+        Container container = await Container();
+
+        await container.UpsertItemAsync(clientCrequestRequest);
     }
 
     public async Task AddResponseMessage(string clientId, string userMessage)
