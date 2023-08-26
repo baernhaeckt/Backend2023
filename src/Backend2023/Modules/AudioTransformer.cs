@@ -21,7 +21,7 @@ public class AudioTransformer
 
     public async Task TransformWebAudioStreamToWavFileWithFfmpeg(Stream webAudioStream, string wavFileName)
     {
-        string webAudioFileName = $"{Path.GetTempFileName()}";
+        string webAudioFileName = $"{Path.GetTempPath()}/{Guid.NewGuid():N}.webm";
         webAudioStream.Seek(0, SeekOrigin.Begin);
         await using (var fileStream = new FileStream(webAudioFileName, FileMode.Create))
         {
