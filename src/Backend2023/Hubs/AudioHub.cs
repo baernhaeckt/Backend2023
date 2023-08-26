@@ -48,9 +48,8 @@ public class AudioHub : Hub
     /// <returns>Upload Task.</returns>
     public async Task TransmitUserAudio(string base64AudioData)
     {
-        var connectionId = Context.ConnectionId;
         var audioDataChunk = Convert.FromBase64String(base64AudioData);
-        MemoryStream audioData =  AudioData.GetOrAdd(connectionId, new MemoryStream());
+        MemoryStream audioData = AudioData.GetOrAdd(Context.ConnectionId, new MemoryStream());
         await audioData.WriteAsync(audioDataChunk);
     }
 
@@ -73,20 +72,30 @@ public class AudioHub : Hub
         try
         {
             AudioTransformer audioTransformer = AudioTransformer.CreateNew();
-
             await audioTransformer.TransformWebAudioStreamToWavFile(audio, waveUserFile);
-            
+
+            // We run the emotion detection async and await it later because we don't depend on it here.
+            Task<EmotionDetectionResponse> emotionDetectionTask = _emotionDetectionClient.ExecuteEmotionDetection(waveUserFile);
+
+            // Get the text from the users voice message using Azure Cognitive Services
+            // and safe it to the conversation.
             string userMessage = await _speechServiceProvider.AudioToTextAsync(new SpeechToTextRequest(waveUserFile));
             await _conversations.AddUserMessage(connectionId, userMessage);
 
+            // Generate the response using Open AI and save it to the conversation.
+            // Afterwards, use the Azure Cognitive Services to generate the audio.
             string textResponse = await _chatBot.GenerateResponse(userMessage);
+            Task addResponseToConversation = _conversations.AddResponseMessage(connectionId, textResponse);
+            Task textToWavFile = _speechServiceProvider.TextToWavFile(new TextToSpeedRequest(textResponse, waveResponseFile));
+            await Task.WhenAll(addResponseToConversation, textToWavFile, emotionDetectionTask);
 
-            await _conversations.AddResponseMessage(connectionId, textResponse);
-            await _speechServiceProvider.TextToWavFile(new TextToSpeedRequest(textResponse, waveResponseFile));
-            var byteContent = await File.ReadAllBytesAsync(waveResponseFile);
+            byte[] byteContent = await File.ReadAllBytesAsync(waveResponseFile);
+            EmotionDetectionResponse emotionDetectionResponse = await emotionDetectionTask;
 
-            await Clients.Caller
-                .SendAsync("audioResponse", new AudioResponse(userMessage, textResponse, Convert.ToBase64String(byteContent)));
+            Task emotionsResponse = Clients.Caller.SendAsync("emotions", emotionDetectionResponse);
+            AudioResponse response = new(userMessage, textResponse, Convert.ToBase64String(byteContent));
+            Task audioResponse = Clients.Caller.SendAsync("audioResponse", response);
+            await Task.WhenAll(emotionsResponse, audioResponse);
         }
         finally
         {
