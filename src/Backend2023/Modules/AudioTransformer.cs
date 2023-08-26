@@ -19,10 +19,4 @@ public class AudioTransformer
         await mediaFoundationReader.CopyToAsync(waveWriter);
         await waveWriter.FlushAsync();
     }
-
-    public void WavToMP3File(string fileName, string mp4FileNameOut)
-    {
-        using WaveFileReader reader = new WaveFileReader(fileName);
-        MediaFoundationEncoder.EncodeToMp3(reader, mp4FileNameOut);
-    }
 }
