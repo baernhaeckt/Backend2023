@@ -7,11 +7,10 @@ EXPOSE 443
 
 FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
 WORKDIR /src
-COPY ["Backend2023/Backend2023.csproj", "Backend2023/"]
-COPY ["Backend2023.Cognitive/Backend2023.Cognitive.csproj", "Backend2023.Cognitive/"]
-RUN dotnet restore "Backend2023/Backend2023.csproj"
+COPY ["src/Backend2023/Backend2023.csproj", "src/Backend2023/"]
+RUN dotnet restore "src/Backend2023/Backend2023.csproj"
 COPY . .
-WORKDIR "/src/Backend2023"
+WORKDIR "/src/src/Backend2023"
 RUN dotnet build "Backend2023.csproj" -c Release -o /app/build
 
 FROM build AS publish
