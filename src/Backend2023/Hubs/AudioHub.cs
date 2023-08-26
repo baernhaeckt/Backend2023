@@ -2,6 +2,7 @@
 using Backend2023.Modules;
 using Backend2023.Persistence;
 using Microsoft.AspNetCore.SignalR;
+using System.Collections.Concurrent;
 
 namespace Backend2023.Hubs;
 
@@ -14,7 +15,7 @@ public class AudioHub : Hub
     private readonly IConversations _conversations;
 
     // Dictionary to hold audio data for each client
-    private static readonly Dictionary<string, MemoryStream> AudioData = new();
+    private static readonly ConcurrentDictionary<string, MemoryStream> AudioData = new();
 
     public AudioHub(SpeechServiceProvider speechServiceProvider, IChatBot chatBot, IConversations conversations)
     {
@@ -37,12 +38,8 @@ public class AudioHub : Hub
     {
         var connectionId = Context.ConnectionId;
         var audioDataChunk = Convert.FromBase64String(base64AudioData);
-        if (!AudioData.ContainsKey(connectionId))
-        {
-            AudioData[connectionId] = new MemoryStream();
-        }
-
-        await AudioData[connectionId].WriteAsync(audioDataChunk);
+        MemoryStream audioData =  AudioData.GetOrAdd(connectionId, new MemoryStream());
+        await audioData.WriteAsync(audioDataChunk);
     }
 
     /// <summary>
@@ -52,7 +49,7 @@ public class AudioHub : Hub
     public async Task CloseAudioStream()
     {
         var connectionId = Context.ConnectionId;
-        if (!AudioData.ContainsKey(connectionId))
+        if (!AudioData.TryRemove(connectionId, out MemoryStream? audio))
         {
             await Clients.Client(connectionId).SendAsync("CloseAudioStreamResponse", 0);
             return;
@@ -63,16 +60,13 @@ public class AudioHub : Hub
         string waveResponseFile = $"response_{messageId}.wav";
         AudioTransformer audioTransformer = AudioTransformer.CreateNew();
 
-        await audioTransformer.TransformWebAudioStreamToWavFile(AudioData[connectionId], waveUserFile);
+        await audioTransformer.TransformWebAudioStreamToWavFile(audio, waveUserFile);
         string userMessage = await _speechServiceProvider.AudioToTextAsync(new SpeechToTextRequest(waveUserFile));
         await _conversations.AddUserMessage(connectionId, userMessage);
         string textResponse = await _chatBot.GenerateResponse(userMessage);
         await _conversations.AddResponseMessage(connectionId, userMessage);
         await _speechServiceProvider.TextToWavFile(new TextToSpeedRequest(textResponse, waveResponseFile));
-
-        await AudioData[connectionId].DisposeAsync();
-        AudioData.Remove(connectionId);
-
+        audio?.DisposeAsync();
         var byteContent = await File.ReadAllBytesAsync(waveResponseFile);
 
         File.Delete(waveUserFile);
@@ -82,6 +76,5 @@ public class AudioHub : Hub
             userMessage,
             textResponse,
             Convert.ToBase64String(byteContent)));
-
     }
 }
