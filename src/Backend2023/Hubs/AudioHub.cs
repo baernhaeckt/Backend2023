@@ -58,23 +58,36 @@ public class AudioHub : Hub
         string messageId = Guid.NewGuid().ToString("N");
         string waveUserFile = $"query_{messageId}.wav";
         string waveResponseFile = $"response_{messageId}.wav";
-        AudioTransformer audioTransformer = AudioTransformer.CreateNew();
+        try
+        {
+            AudioTransformer audioTransformer = AudioTransformer.CreateNew();
 
-        await audioTransformer.TransformWebAudioStreamToWavFile(audio, waveUserFile);
-        string userMessage = await _speechServiceProvider.AudioToTextAsync(new SpeechToTextRequest(waveUserFile));
-        await _conversations.AddUserMessage(connectionId, userMessage);
-        string textResponse = await _chatBot.GenerateResponse(userMessage);
-        await _conversations.AddResponseMessage(connectionId, userMessage);
-        await _speechServiceProvider.TextToWavFile(new TextToSpeedRequest(textResponse, waveResponseFile));
-        audio?.DisposeAsync();
-        var byteContent = await File.ReadAllBytesAsync(waveResponseFile);
+            await audioTransformer.TransformWebAudioStreamToWavFile(audio, waveUserFile);
+            
+            string userMessage = await _speechServiceProvider.AudioToTextAsync(new SpeechToTextRequest(waveUserFile));
+            await _conversations.AddUserMessage(connectionId, userMessage);
 
-        File.Delete(waveUserFile);
-        File.Delete(waveResponseFile);
+            string textResponse = await _chatBot.GenerateResponse(userMessage);
 
-        await Clients.Caller.SendAsync("audioResponse", new AudioResponse(
-            userMessage,
-            textResponse,
-            Convert.ToBase64String(byteContent)));
+            await _conversations.AddResponseMessage(connectionId, textResponse);
+            await _speechServiceProvider.TextToWavFile(new TextToSpeedRequest(textResponse, waveResponseFile));
+            audio?.DisposeAsync();
+            var byteContent = await File.ReadAllBytesAsync(waveResponseFile);
+
+            await Clients.Caller
+                .SendAsync("audioResponse", new AudioResponse(userMessage, textResponse, Convert.ToBase64String(byteContent)));
+        }
+        finally
+        {
+            if (File.Exists(waveUserFile))
+            {
+                File.Delete(waveUserFile);
+            }
+
+            if (File.Exists(waveResponseFile))
+            {
+                File.Delete(waveResponseFile);
+            }
+        }
     }
 }
