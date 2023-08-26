@@ -7,4 +7,6 @@ public class ApplicationConfiguration
     public required string CosmosDbConnectionString { get; set; }
 
     public required string AzureAIServicesKey { get; set; }
+
+    public required string MlServiceUrl { get; set; }
 }
