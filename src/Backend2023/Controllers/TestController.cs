@@ -1,3 +1,4 @@
+using Backend2023.Hubs;
 using Backend2023.Modules;
 using Backend2023.Persistence;
 using Microsoft.AspNetCore.Mvc;
@@ -18,6 +19,18 @@ public class TestController : ControllerBase
     public async Task AddRequest([FromServices] IConversations conversations, string clientId, string message)
     {
         await conversations.AddUserMessage(clientId, message);
+    }
+
+    [HttpPost("EmotionDetection")]
+    public async Task EmotionDetection([FromServices] IEmotionDetectionClient client, IFormFile formFile)
+    {
+        FileInfo fileInfo = new(Path.GetTempFileName());
+        using(Stream stream = fileInfo.OpenWrite())
+        {
+            await formFile.CopyToAsync(stream);
+        }
+
+        await client.ExecuteEmotionDetection(fileInfo.FullName);
     }
 
     [HttpGet("Conversation")]
