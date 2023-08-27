@@ -105,7 +105,7 @@ public class AudioHub : Hub
             await Task.WhenAll(emotionsResponse, audioResponse);
 
             // Disabled because blocking the request
-            // await TriggerDelayedPushAsync(connectionId);
+            await TriggerDelayedPushAsync(connectionId);
         }
         finally
         {
@@ -125,7 +125,7 @@ public class AudioHub : Hub
 
     private async Task TriggerDelayedPushAsync(string connectionId)
     {
-        TimeSpan delay = TimeSpan.FromSeconds(45);
+        TimeSpan delay = TimeSpan.FromSeconds(20);
         await Task.Delay(delay);
 
         string messageId = Guid.NewGuid().ToString("N");
