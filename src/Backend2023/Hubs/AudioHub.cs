@@ -139,7 +139,7 @@ public class AudioHub : Hub
         await Task.WhenAll(addResponseToConversation, textToWavFile);
 
         byte[] byteContent = await File.ReadAllBytesAsync(waveResponseFile);
-        AudioResponse response = new(userMessage, textResponse, Convert.ToBase64String(byteContent));
+        AudioResponse response = new(String.Empty, textResponse, Convert.ToBase64String(byteContent));
         Task audioResponse = Clients.Caller.SendAsync("audioResponse", response);
         await audioResponse;
     }
