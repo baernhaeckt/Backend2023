@@ -104,7 +104,8 @@ public class AudioHub : Hub
             Task audioResponse = Clients.Caller.SendAsync("audioResponse", response);
             await Task.WhenAll(emotionsResponse, audioResponse);
 
-            await TriggerDelayedPushAsync(connectionId);
+            // Disabled because blocking the request
+            // await TriggerDelayedPushAsync(connectionId);
         }
         finally
         {
