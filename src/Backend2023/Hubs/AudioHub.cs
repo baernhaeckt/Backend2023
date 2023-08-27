@@ -125,7 +125,7 @@ public class AudioHub : Hub
 
     private async Task TriggerDelayedPushAsync(string connectionId)
     {
-        TimeSpan delay = TimeSpan.FromSeconds(20);
+        TimeSpan delay = TimeSpan.FromSeconds(30);
         await Task.Delay(delay);
 
         string messageId = Guid.NewGuid().ToString("N");
