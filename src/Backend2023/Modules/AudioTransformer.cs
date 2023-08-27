@@ -43,20 +43,41 @@ public class AudioTransformer
         };
 
         // Start the process
+        var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
         using (Process process = new Process())
         {
             process.StartInfo = psi;
-            process.Start();                // Handle the output and error streams
-            process.OutputDataReceived += (sender, e) => _logger.LogInformation(e.Data);
-            process.ErrorDataReceived += (sender, e) => _logger.LogError(e.Data);
+            process.OutputDataReceived += LogOutputData;
+            process.ErrorDataReceived += LogErrorData;
 
             process.Start();
             process.BeginOutputReadLine();
             process.BeginErrorReadLine();
-            await process.WaitForExitAsync();
+            await process.WaitForExitAsync(cts.Token);
+
+            if (cts.IsCancellationRequested)
+            {
+                _logger.LogError("Timeout executing ffmpeg after 30sec.");
+                process.Close();
+            }
+
+            process.CancelOutputRead();
+            process.CancelErrorRead();
+            process.OutputDataReceived -= LogOutputData;
+            process.ErrorDataReceived -= LogErrorData;
 
             _logger.LogInformation("Process exited with code: " + process.ExitCode);
         }
+    }
+
+    private void LogOutputData(object sender, DataReceivedEventArgs e)
+    {
+        _logger.LogInformation(e.Data);
+    }
+
+    private void LogErrorData(object sender, DataReceivedEventArgs e)
+    {
+        _logger.LogError(e.Data);
     }
 
     public async Task TransformWebAudioStreamToWavFileOld(Stream webAudioStream, string fileName)
