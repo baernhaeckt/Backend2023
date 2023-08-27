@@ -1,7 +1,4 @@
 ﻿using System.Diagnostics;
-using System.Net.Http.Headers;
-using Backend2023.Hubs;
-using NAudio.Wave;
 
 namespace Backend2023.Modules;
 
@@ -10,12 +7,10 @@ namespace Backend2023.Modules;
 /// </summary>
 public class AudioTransformer
 {
-    private readonly HttpClient _httpClient;
     private readonly ILogger<AudioTransformer> _logger;
 
-    public AudioTransformer(HttpClient httpClient, ILogger<AudioTransformer> logger)
+    public AudioTransformer(ILogger<AudioTransformer> logger)
     {
-        _httpClient = httpClient;
         _logger = logger;
     }
 
@@ -78,15 +73,5 @@ public class AudioTransformer
     private void LogErrorData(object sender, DataReceivedEventArgs e)
     {
         _logger.LogError(e.Data);
-    }
-
-    public async Task TransformWebAudioStreamToWavFileOld(Stream webAudioStream, string fileName)
-    {
-        webAudioStream.Seek(0, SeekOrigin.Begin);
-        await using var fileStream = new FileStream(fileName, FileMode.Create);
-        await using StreamMediaFoundationReader mediaFoundationReader = new StreamMediaFoundationReader(webAudioStream);
-        await using WaveFileWriter waveWriter = new WaveFileWriter(fileStream, mediaFoundationReader.WaveFormat);
-        await mediaFoundationReader.CopyToAsync(waveWriter);
-        await waveWriter.FlushAsync();
     }
 }

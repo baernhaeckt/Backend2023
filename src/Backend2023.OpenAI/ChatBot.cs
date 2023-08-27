@@ -10,7 +10,8 @@ public class ChatBot : IChatBot
 {
     private static readonly string[] _systemPrompts =
     {
-        "Du bist ein erfahrener psychologe, dir werden persönliche fragen gestellt die du kurz, prägnant und einfühlsam beantworten sollst."
+        "Du bist ein erfahrener psychologe, dir werden persönliche fragen gestellt die du kurz, prägnant und einfühlsam beantworten sollst. " +
+        "Antworte in maximal drei Sätzen."
     };
 
     private readonly IOptions<ApplicationConfiguration> _options;

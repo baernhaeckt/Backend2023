@@ -11,6 +11,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services
     .Configure<ApplicationConfiguration>(builder.Configuration.GetRequiredSection(nameof(ApplicationConfiguration)))
     .AddScoped<SpeechServiceProvider>()
+    .AddScoped<AudioTransformer>()
     .AddSingleton<IChatBot, ChatBot>()
     .AddSingleton<IConversations, Conversations>()
     .AddSingleton<IConversationSummarizer, ConversationSummarizer>()
@@ -20,12 +21,6 @@ builder.Services
         Uri baseUrl = new(options.Value.MlServiceUrl);
         client.BaseAddress = baseUrl;
     });
-builder.Services.AddHttpClient<AudioTransformer>((serviceProvider, client) =>
-{
-    var options = serviceProvider.GetRequiredService<IOptions<ApplicationConfiguration>>();
-    Uri baseUrl = new(options.Value.MlServiceUrl);
-    client.BaseAddress = baseUrl;
-});
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

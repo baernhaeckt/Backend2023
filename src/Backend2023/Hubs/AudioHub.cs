@@ -79,10 +79,6 @@ public class AudioHub : Hub
         string waveResponseFile = $"response_{messageId}.wav";
         try
         {
-            await using var fileStream = new FileStream($"{messageId}.webm", FileMode.Create);
-            audio.Seek(0, SeekOrigin.Begin);
-            await audio.CopyToAsync(fileStream);
-
             await _audioTransformer.TransformWebAudioStreamToWavFileWithFfmpeg(audio, waveUserFile);
 
             // We run the emotion detection async and await it later because we don't depend on it here.
@@ -107,6 +103,8 @@ public class AudioHub : Hub
             AudioResponse response = new(userMessage, textResponse, Convert.ToBase64String(byteContent));
             Task audioResponse = Clients.Caller.SendAsync("audioResponse", response);
             await Task.WhenAll(emotionsResponse, audioResponse);
+
+            await TriggerDelayedPushAsync(connectionId);
         }
         finally
         {
@@ -122,6 +120,39 @@ public class AudioHub : Hub
                 File.Delete(waveResponseFile);
             }
         }
+    }
+
+    private async Task TriggerDelayedPushAsync(string connectionId)
+    {
+        TimeSpan delay = TimeSpan.FromSeconds(45);
+        await Task.Delay(delay);
+
+        string messageId = Guid.NewGuid().ToString("N");
+        string waveResponseFile = $"response_{messageId}.wav";
+
+        string userMessage = SelectAutomatedTriggeredMessage();
+
+        string textResponse = await _chatBot.GenerateResponse(userMessage);
+        Task addResponseToConversation = _conversations.AddResponseMessage(connectionId, textResponse);
+        Task textToWavFile = _speechServiceProvider.TextToWavFile(new TextToSpeedRequest(textResponse, waveResponseFile));
+        await Task.WhenAll(addResponseToConversation, textToWavFile);
+
+        byte[] byteContent = await File.ReadAllBytesAsync(waveResponseFile);
+        AudioResponse response = new(userMessage, textResponse, Convert.ToBase64String(byteContent));
+        Task audioResponse = Clients.Caller.SendAsync("audioResponse", response);
+        await audioResponse;
+    }
+
+    private string SelectAutomatedTriggeredMessage()
+    {
+        string[] possibleTriggerPhrases = new[]
+        {
+            "Frag mich nach meinem Tag",
+            "Frag mich wie es mir geht",
+            "Erzähl mir einen Witz"
+        };
+
+        return possibleTriggerPhrases[Random.Shared.Next(possibleTriggerPhrases.Length)];
     }
 
     public override Task OnConnectedAsync()
